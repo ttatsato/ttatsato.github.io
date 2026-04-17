@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
 
 // GitHub Pages settings.
 // - User/Org page (username.github.io): site: 'https://<user>.github.io', base: '/'
@@ -6,4 +7,5 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
   site: 'https://ttatsato.github.io',
   base: '/',
+  integrations: [mdx()],
 });
