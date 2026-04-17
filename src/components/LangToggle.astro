@@ -7,7 +7,7 @@
   (() => {
     const KEY = 'lang-focus';
     const root = document.documentElement;
-    const saved = localStorage.getItem(KEY) || 'all';
+    const saved = localStorage.getItem(KEY) || 'ja';
     root.dataset.lang = saved;
 
     const sync = () => {
