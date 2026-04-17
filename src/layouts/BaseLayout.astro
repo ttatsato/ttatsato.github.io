@@ -29,7 +29,9 @@ const { title } = Astro.props;
   header a { font-weight: bold; text-decoration: none; color: inherit; }
   pre { padding: 1rem; border-radius: 6px; overflow-x: auto; }
 
-  .lang-seg { transition: opacity .15s ease; margin: 0; }
-  html[data-lang="en"] [lang="ja"].lang-seg { opacity: .25; }
-  html[data-lang="ja"] [lang="en"].lang-seg { opacity: .25; }
+  .lang-seg { transition: opacity .15s ease, font-size .15s ease; margin: 0.9em 0 0; }
+  .lang-seg:first-child { margin-top: 0; }
+  [lang="en"].lang-seg + [lang="ja"].lang-seg { margin-top: 0; }
+  html[data-lang="en"] [lang="ja"].lang-seg { opacity: .35; font-size: .75em; }
+  html[data-lang="ja"] [lang="en"].lang-seg { opacity: .35; font-size: .75em; }
 </style>
