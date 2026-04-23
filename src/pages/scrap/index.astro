@@ -1,0 +1,178 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Highlighter from '../../components/bujo/Highlighter.astro';
+import Washi from '../../components/bujo/Washi.astro';
+import RulerLine from '../../components/bujo/RulerLine.astro';
+import IndexCard from '../../components/bujo/IndexCard.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const scraps = (await getCollection('scrap')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const categories = Array.from(new Set(scraps.flatMap((s) => (s.data.category ? [s.data.category] : []))));
+const filterTags = ['All', ...categories];
+const pinColors = ['var(--red)', 'var(--teal)', 'var(--navy)', 'var(--olive)'];
+---
+<BaseLayout title="Scrap" variant="wide" active="scrap" description="Scraps — short reusable notes, importable into articles.">
+  <section class="wrap">
+    <Washi top={30} left={44} w={180} rot={-3} color="#f4b94f" pattern="stripes" />
+    <div class="kicker hand">page 04 · scraps · the index</div>
+
+    <h1 class="head">
+      <Highlighter color="green">Scrap wall.</Highlighter>
+    </h1>
+
+    <p class="lede">
+      Small, reusable notes. Each one is a <Highlighter color="pink">definition, technique, or principle</Highlighter>
+      I want to link to from posts. Pin them here; paste them in.
+    </p>
+
+    <div class="filter" role="tablist" aria-label="Filter scraps">
+      {filterTags.map((t) => (
+        <button type="button" class="filter__chip" data-filter={t} style={`transform:rotate(${(t.length % 3 - 1) * 0.7}deg)`} aria-pressed={t === 'All' ? 'true' : 'false'}>
+          #{t}
+        </button>
+      ))}
+      <span class="filter__count hand">
+        showing <span data-count>{scraps.length}</span> of {scraps.length}
+      </span>
+    </div>
+
+    <RulerLine />
+
+    <div class="wall">
+      {scraps.map((s, i) => {
+        const rot = ((i * 37) % 10 - 5) * 0.5;
+        const pin = pinColors[i % 4];
+        return (
+          <div class="item"
+               data-cat={s.data.category ?? 'All'}
+               data-reveal data-reveal-delay={String(((i % 3) + 1))}
+               style={`transform:rotate(${rot}deg)`}>
+            <span class="pin" style={`--pin:${pin}`}></span>
+            <IndexCard
+              title={s.data.title}
+              sub={s.data.category}
+              body={s.data.description}
+              href={`${base}scrap/${s.id}/`}
+              rot={0}
+              width="100%"
+            />
+            {s.data.category && (
+              <div class="item__tags hand">#{s.data.category.toLowerCase()}</div>
+            )}
+          </div>
+        );
+      })}
+      {scraps.length === 0 && <div class="empty hand">Nothing pinned yet.</div>}
+    </div>
+
+    <div class="foot hand">
+      <span>— {scraps.length} scraps total —</span>
+      <span>kept sorted by date · hover a pin for a peek</span>
+    </div>
+  </section>
+
+  <script is:inline>
+    (() => {
+      const chips = document.querySelectorAll('.filter__chip');
+      const items = document.querySelectorAll('.item');
+      const count = document.querySelector('[data-count]');
+      const apply = (t) => {
+        let shown = 0;
+        items.forEach((el) => {
+          const cat = el.getAttribute('data-cat') || 'All';
+          const match = t === 'All' || cat === t;
+          el.style.display = match ? '' : 'none';
+          if (match) shown++;
+        });
+        if (count) count.textContent = String(shown);
+      };
+      chips.forEach((c) => {
+        c.addEventListener('click', () => {
+          chips.forEach((x) => x.setAttribute('aria-pressed', 'false'));
+          c.setAttribute('aria-pressed', 'true');
+          apply(c.getAttribute('data-filter'));
+        });
+      });
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: var(--maxw); margin: 0 auto;
+    padding: 44px 24px 56px;
+    position: relative;
+    background:
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.02) 0 2px, transparent 2px 40px);
+  }
+
+  .kicker { font-size: 18px; color: var(--ink-dim); margin-top: 14px; }
+  .head {
+    font-family: var(--font-marker);
+    font-weight: 900;
+    font-size: clamp(3rem, 9vw, 7rem);
+    line-height: 0.9; letter-spacing: -0.02em;
+    margin: 8px 0 6px;
+  }
+  .lede {
+    font-family: var(--font-note);
+    font-size: 1.1rem; line-height: 1.5;
+    max-width: 780px; margin: 0 0 20px;
+  }
+
+  .filter {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    margin-bottom: 6px;
+  }
+  .filter__chip {
+    font-family: var(--font-hand); font-size: 1.15rem;
+    padding: 3px 14px;
+    background: var(--paper-card); color: var(--ink);
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: all 0.15s ease;
+  }
+  .filter__chip:hover { background: var(--paper); }
+  .filter__chip[aria-pressed='true'] {
+    background: var(--red); color: var(--paper-card);
+    box-shadow: none; transform: translate(2px, 2px) rotate(0deg) !important;
+    border-color: var(--red);
+  }
+  .filter__count { margin-left: auto; color: var(--ink-dim); font-size: 1.1rem; }
+
+  .wall {
+    display: grid; gap: 26px 22px;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 28px 0 0;
+  }
+  @media (max-width: 960px) { .wall { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .wall { grid-template-columns: 1fr; } }
+
+  .item { position: relative; transition: transform 0.2s ease; }
+  .item:hover { transform: translateY(-4px) !important; }
+  .pin {
+    position: absolute; top: -6px; left: 50%;
+    transform: translateX(-50%);
+    width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, var(--pin) 60%, rgba(0, 0, 0, 0.6));
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+    z-index: 3;
+  }
+  .item__tags {
+    text-align: right; font-size: 14px; color: var(--ink-dim);
+    margin-top: 6px;
+  }
+
+  .empty { color: var(--ink-dim); font-size: 1.3rem; padding: 30px; text-align: center; }
+
+  .foot {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    margin-top: 40px; color: var(--ink-dim); font-size: 1.2rem;
+  }
+</style>

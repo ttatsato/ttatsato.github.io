@@ -1,0 +1,30 @@
+---
+interface Props {
+  kind?: 'dot' | 'star' | 'arrow' | 'open' | 'x';
+  color?: string;
+}
+const { kind = 'dot', color = 'var(--ink)' } = Astro.props;
+---
+<svg class="bullet" width="16" height="16" aria-hidden="true">
+  {kind === 'dot' && <circle cx="8" cy="8" r="3.4" fill={color} />}
+  {kind === 'star' && (
+    <path
+      d="M8 1 L 10 6 L 15 6.5 L 11 10 L 12 15 L 8 12 L 4 15 L 5 10 L 1 6.5 L 6 6 Z"
+      stroke={color} stroke-width="1.4" fill={color}
+    />
+  )}
+  {kind === 'arrow' && (
+    <path
+      d="M3 8 L 13 8 M 9 4 L 13 8 L 9 12"
+      stroke={color} stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"
+    />
+  )}
+  {kind === 'open' && <circle cx="8" cy="8" r="4" stroke={color} stroke-width="1.6" fill="none" />}
+  {kind === 'x' && (
+    <path d="M3 3 L 13 13 M 13 3 L 3 13" stroke={color} stroke-width="1.8" fill="none" stroke-linecap="round" />
+  )}
+</svg>
+
+<style>
+  .bullet { vertical-align: -3px; margin-right: 8px; display: inline-block; }
+</style>

@@ -1,0 +1,82 @@
+---
+interface Props {
+  title: string;
+  sub?: string;
+  body?: string;
+  href?: string;
+  rot?: number;
+  width?: number | string;
+}
+const { title, sub, body, href, rot = -1.2, width } = Astro.props;
+const w = width == null ? '' : typeof width === 'number' ? `${width}px` : width;
+const style = [`transform:rotate(${rot}deg)`, w && `min-width:${w}`, w && `max-width:${w}`]
+  .filter(Boolean)
+  .join(';');
+const Tag = href ? 'a' : 'div';
+---
+<Tag class="ic" href={href} style={style}>
+  <div class="ic__margin" aria-hidden="true"></div>
+  <div class="ic__tape" aria-hidden="true"></div>
+  <div class="ic__kicker">◇ Scrap</div>
+  <div class="ic__title">{title}</div>
+  {sub && <div class="ic__sub">{sub}</div>}
+  {body && <div class="ic__body">{body}</div>}
+</Tag>
+
+<style>
+  .ic {
+    position: relative;
+    display: block;
+    background: #fffdf7;
+    padding: 18px 18px 16px;
+    box-shadow:
+      0 6px 14px rgba(42, 39, 34, 0.14),
+      0 2px 3px rgba(42, 39, 34, 0.08);
+    font-family: var(--font-note);
+    color: var(--ink);
+    background-image: repeating-linear-gradient(
+      180deg,
+      transparent 0 26px,
+      rgba(42, 107, 107, 0.13) 26px 27px
+    );
+    background-position: 0 32px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  a.ic:hover {
+    box-shadow:
+      0 10px 22px rgba(42, 39, 34, 0.2),
+      0 3px 5px rgba(42, 39, 34, 0.1);
+  }
+  .ic__margin {
+    position: absolute; left: 28px; top: 0; bottom: 0;
+    width: 1px; background: rgba(184, 69, 45, 0.4);
+  }
+  .ic__tape {
+    position: absolute; top: -9px; left: 26px;
+    width: 70px; height: 20px;
+    background: repeating-linear-gradient(45deg, #f4b94f 0 6px, rgba(255, 255, 255, 0.5) 6px 10px);
+    transform: rotate(-5deg);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.08);
+    border-left: 1px dashed rgba(0, 0, 0, 0.08);
+    border-right: 1px dashed rgba(0, 0, 0, 0.08);
+  }
+  .ic__kicker {
+    font-family: var(--font-hand); font-size: 15px; color: var(--red);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding-left: 12px; margin-bottom: 2px;
+  }
+  .ic__title {
+    font-family: var(--font-marker); font-weight: 700;
+    font-size: 24px; line-height: 1;
+    padding-left: 12px; margin-bottom: 2px;
+  }
+  .ic__sub {
+    font-size: 15px; color: var(--ink-dim);
+    padding-left: 12px; margin-bottom: 8px;
+  }
+  .ic__body {
+    font-size: 15px; line-height: 1.35; padding-left: 12px;
+  }
+</style>

@@ -7,6 +7,11 @@ const posts = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     description: z.string().optional(),
+    kicker: z.string().optional(),
+    readTime: z.number().optional(),
+    tags: z.array(z.string()).optional(),
+    scraps: z.array(z.string()).optional(),
+    draft: z.boolean().optional(),
   }),
 });
 
@@ -17,6 +22,7 @@ const scrap = defineCollection({
     date: z.coerce.date(),
     description: z.string().optional(),
     category: z.string().optional(),
+    tags: z.array(z.string()).optional(),
   }),
 });
 

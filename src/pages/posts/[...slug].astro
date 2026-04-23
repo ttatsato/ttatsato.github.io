@@ -1,6 +1,10 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Highlighter from '../../components/bujo/Highlighter.astro';
+import Washi from '../../components/bujo/Washi.astro';
+import RulerLine from '../../components/bujo/RulerLine.astro';
+import IndexCard from '../../components/bujo/IndexCard.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -13,54 +17,201 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 const base = import.meta.env.BASE_URL;
+
+// Resolve scraps referenced in frontmatter
+const scrapIds = post.data.scraps ?? [];
+let referenced: { id: string; title: string; sub?: string; body?: string }[] = [];
+if (scrapIds.length) {
+  const all = await getCollection('scrap');
+  referenced = scrapIds
+    .map((id) => all.find((e) => e.id === id))
+    .filter((e): e is NonNullable<typeof e> => !!e)
+    .map((e) => ({ id: e.id, title: e.data.title, sub: e.data.category, body: e.data.description }));
+}
 ---
-<BaseLayout title={post.data.title} description={post.data.description}>
-  <a class="back-link" href={base}>
-    <span aria-hidden="true">←</span> back to index
-  </a>
-  <article class="article">
-    <header class="article__head">
-      <div class="article__meta mono">
-        <time datetime={post.data.date.toISOString()}>
-          {post.data.date.toISOString().slice(0, 10)}
-        </time>
-        <span class="article__sep">·</span>
-        <span>post</span>
+<BaseLayout title={post.data.title} description={post.data.description} variant="wide" active="home">
+  <article class="post">
+    <header class="head">
+      <Washi top={30} left={12} w={180} rot={-3} color="#f4b94f" pattern="stripes" />
+      <div class="meta hand">
+        <a href={base}>← back to journal</a>
+        {post.data.kicker && <span>· {post.data.kicker}</span>}
+        <span class="meta__right">
+          <time datetime={post.data.date.toISOString()}>{post.data.date.toISOString().slice(0, 10)}</time>
+          {post.data.readTime && <span> · ~{post.data.readTime} min</span>}
+        </span>
       </div>
-      <h1>{post.data.title}</h1>
-      {post.data.description && <p class="article__desc">{post.data.description}</p>}
+
+      <h1 class="title">
+        <Highlighter color="yellow">{post.data.title}</Highlighter>
+      </h1>
+      {post.data.description && <p class="kicker-sub hand">{post.data.description}</p>}
+
+      {post.data.tags && post.data.tags.length > 0 && (
+        <div class="tags">
+          {post.data.tags.map((t, i) => (
+            <span style={`transform:rotate(${(i % 2 === 0 ? -0.6 : 0.6)}deg)`}>#{t.toLowerCase()}</span>
+          ))}
+        </div>
+      )}
+
+      <RulerLine />
     </header>
-    <hr class="article__rule" />
-    <div class="article__body">
-      <Content />
+
+    <div class="body-wrap">
+      <article class="body">
+        <Content />
+      </article>
+
+      {referenced.length > 0 && (
+        <aside class="rail">
+          <div class="rail__title">◇ scraps used:</div>
+          {referenced.map((s, i) => (
+            <IndexCard
+              title={s.title}
+              sub={s.sub}
+              body={s.body}
+              href={`${base}scrap/${s.id}/`}
+              rot={i % 2 === 0 ? -1.8 : 1.6}
+              width={280}
+            />
+          ))}
+          <div class="rail__hint hand">
+            ↑ hover any ◇ in text<br />for an inline preview
+          </div>
+        </aside>
+      )}
     </div>
+
+    <footer class="foot">
+      <RulerLine />
+      <div class="foot__nav">
+        <a href={base}>← back to journal</a>
+        <a href={`${base}scrap/`}>all scraps →</a>
+      </div>
+    </footer>
   </article>
 </BaseLayout>
 
 <style>
-  .back-link {
-    display: inline-flex; align-items: center; gap: 6px;
-    color: var(--ink-dim); text-decoration: none;
-    font-family: var(--font-mono); font-size: 12px;
-    margin-bottom: 32px;
-    transition: color 0.15s ease, transform 0.15s ease;
+  .post {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 36px 24px 60px;
+    position: relative;
   }
-  .back-link:hover { color: var(--ink); transform: translateX(-2px); }
+  .head { position: relative; padding-top: 12px; }
+  .meta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    font-size: 1.05rem; color: var(--ink-dim);
+    margin-top: 14px;
+  }
+  .meta a { color: var(--ink); text-decoration: none; border-bottom: 1.5px dashed var(--ink); padding-bottom: 1px; }
+  .meta a:hover { color: var(--red); border-color: var(--red); }
+  .meta__right { margin-left: auto; }
 
-  .article__head { margin-bottom: 20px; }
-  .article__meta {
-    display: inline-flex; align-items: center; gap: 8px;
-    color: var(--ink-faint);
-    margin-bottom: 12px;
+  .title {
+    font-family: var(--font-marker);
+    font-weight: 900;
+    font-size: clamp(2.2rem, 5.2vw, 4rem);
+    line-height: 1.0; letter-spacing: -0.015em;
+    margin: 12px 0 8px;
   }
-  .article__sep { opacity: 0.6; }
-  .article__desc {
-    color: var(--ink-dim); font-size: 1.08rem; margin: 12px 0 0;
-    font-style: italic;
+  .kicker-sub {
+    font-size: 1.3rem; color: var(--teal);
+    margin: 0 0 10px;
   }
-  .article__rule {
-    border: none; border-top: 1px dashed var(--line-strong);
-    margin: 28px 0;
+  .tags {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin: 10px 0 14px;
   }
-  .article__body { font-size: 1rem; line-height: 1.8; }
+  .tags span {
+    font-family: var(--font-hand); font-size: 1.05rem;
+    border: 2px solid var(--ink); background: var(--paper-card);
+    padding: 1px 10px; display: inline-block;
+  }
+
+  .body-wrap {
+    display: grid; grid-template-columns: 1fr 320px; gap: 44px;
+    align-items: start;
+    margin-top: 16px;
+  }
+  @media (max-width: 900px) {
+    .body-wrap { grid-template-columns: 1fr; gap: 28px; }
+    .rail { order: 2; }
+  }
+
+  .body {
+    font-family: var(--font-note);
+    font-size: 1.12rem; line-height: 1.7;
+    max-width: 720px;
+  }
+  .body :global(h1) { display: none; } /* hero h1 is rendered above */
+  .body :global(h2) {
+    font-family: var(--font-marker); font-weight: 700;
+    font-size: 1.7rem; letter-spacing: -0.01em;
+    margin: 1.8em 0 0.4em;
+    padding-bottom: 0.2em; border-bottom: 1.5px solid var(--ink);
+  }
+  .body :global(h3) {
+    font-family: var(--font-marker); font-weight: 700;
+    font-size: 1.25rem; color: var(--teal);
+    margin: 1.5em 0 0.4em;
+  }
+  .body :global(p) { margin: 0 0 1em; }
+  .body :global(a) {
+    color: var(--red); text-decoration: underline;
+    text-underline-offset: 3px; text-decoration-thickness: 1.5px;
+    text-decoration-style: dashed;
+  }
+  .body :global(a:hover) { background: rgba(184, 69, 45, 0.08); }
+  .body :global(ul), .body :global(ol) { padding-left: 1.3em; margin: 0 0 1em; }
+  .body :global(li) { margin: 0.25em 0; }
+  .body :global(li::marker) { color: var(--red); }
+  .body :global(blockquote) {
+    font-family: var(--font-marker);
+    font-size: 1.5rem; line-height: 1.25;
+    border-left: 4px solid var(--red);
+    padding: 0.2em 1em; margin: 1.4em 0;
+  }
+  .body :global(code) {
+    font-family: var(--font-mono); font-size: 0.88em;
+    background: var(--paper-alt);
+    padding: 0.1em 0.4em;
+    border: 1px solid var(--line);
+  }
+  .body :global(pre) {
+    background: var(--paper-card);
+    border: 2px solid var(--ink);
+    padding: 1rem 1.1rem; overflow-x: auto;
+    font-family: var(--font-mono); font-size: 0.85em; line-height: 1.6;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .body :global(pre code) { background: transparent; border: none; padding: 0; }
+  .body :global(hr) {
+    border: none; border-top: 2px dashed var(--ink);
+    margin: 2em auto; width: 60%; opacity: 0.4;
+  }
+
+  .rail {
+    position: sticky; top: 80px;
+    display: flex; flex-direction: column; gap: 22px;
+  }
+  .rail__title {
+    font-family: var(--font-marker); font-weight: 700;
+    font-size: 1.35rem; transform: rotate(-2deg);
+    margin-bottom: 2px;
+  }
+  .rail__hint {
+    font-size: 1rem; color: var(--ink-dim); text-align: center;
+  }
+
+  .foot { margin-top: 48px; }
+  .foot__nav {
+    display: flex; justify-content: space-between;
+    margin-top: 18px;
+    font-family: var(--font-hand); font-size: 1.15rem;
+  }
+  .foot__nav a { color: var(--ink); text-decoration: none; border-bottom: 1.5px dashed var(--ink); padding-bottom: 1px; }
+  .foot__nav a:hover { color: var(--red); border-color: var(--red); }
 </style>
