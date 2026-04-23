@@ -12,11 +12,55 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const base = import.meta.env.BASE_URL;
 ---
-<BaseLayout title={post.data.title}>
-  <article>
-    <h1>{post.data.title}</h1>
-    <p><small>{post.data.date.toISOString().slice(0, 10)}</small></p>
-    <Content />
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <a class="back-link" href={base}>
+    <span aria-hidden="true">←</span> back to index
+  </a>
+  <article class="article">
+    <header class="article__head">
+      <div class="article__meta mono">
+        <time datetime={post.data.date.toISOString()}>
+          {post.data.date.toISOString().slice(0, 10)}
+        </time>
+        <span class="article__sep">·</span>
+        <span>post</span>
+      </div>
+      <h1>{post.data.title}</h1>
+      {post.data.description && <p class="article__desc">{post.data.description}</p>}
+    </header>
+    <hr class="article__rule" />
+    <div class="article__body">
+      <Content />
+    </div>
   </article>
 </BaseLayout>
+
+<style>
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--ink-dim); text-decoration: none;
+    font-family: var(--font-mono); font-size: 12px;
+    margin-bottom: 32px;
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+  .back-link:hover { color: var(--ink); transform: translateX(-2px); }
+
+  .article__head { margin-bottom: 20px; }
+  .article__meta {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+  .article__sep { opacity: 0.6; }
+  .article__desc {
+    color: var(--ink-dim); font-size: 1.08rem; margin: 12px 0 0;
+    font-style: italic;
+  }
+  .article__rule {
+    border: none; border-top: 1px dashed var(--line-strong);
+    margin: 28px 0;
+  }
+  .article__body { font-size: 1rem; line-height: 1.8; }
+</style>
