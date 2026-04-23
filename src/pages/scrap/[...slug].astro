@@ -127,4 +127,29 @@ const base = import.meta.env.BASE_URL;
     background: var(--paper-alt);
     padding: 0.1em 0.4em; border: 1px solid var(--line);
   }
+
+  .body { overflow-wrap: anywhere; }
+
+  @media (max-width: 600px) {
+    .scrap-card {
+      padding: 24px 18px 24px 30px;
+    }
+    .scrap-card::before {
+      left: 18px;
+    }
+    .title {
+      font-size: clamp(1.6rem, 7vw, 2.2rem);
+    }
+    .def {
+      font-size: 1.1rem;
+      padding: 0.2em 0.6em 0.2em 0.6em;
+    }
+    .body {
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+    .hint {
+      font-size: 0.95rem;
+    }
+  }
 </style>
