@@ -1,0 +1,82 @@
+---
+// Inline "◇ name" chip. On hover, an IndexCard pops up.
+// Use in MDX: <ScrapChip id="ai" />  — resolves against the `scrap` collection.
+import { getCollection } from 'astro:content';
+
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+
+const all = await getCollection('scrap');
+const entry = all.find((e) => e.id === id);
+const base = import.meta.env.BASE_URL;
+
+const title = entry?.data.title ?? id;
+const sub = entry?.data.category ?? '';
+const body = entry?.data.description ?? '';
+const href = entry ? `${base}scrap/${entry.id}/` : '#';
+---
+<span class="chip-wrap">
+  <a class="chip" href={href}>◇ {title}</a>
+  <span class="chip-pop" aria-hidden="true">
+    <span class="ic-mini">
+      <span class="ic-mini__kicker">◇ Scrap</span>
+      <span class="ic-mini__title">{title}</span>
+      {sub && <span class="ic-mini__sub">{sub}</span>}
+      {body && <span class="ic-mini__body">{body}</span>}
+    </span>
+  </span>
+</span>
+
+<style>
+  .chip-wrap { position: relative; display: inline-block; }
+  .chip {
+    display: inline-block;
+    font-family: var(--font-hand); font-size: 1.1em;
+    color: var(--red); text-decoration: none;
+    border-bottom: 1.5px dashed var(--red);
+    padding: 0 2px;
+    transition: background 0.15s ease;
+  }
+  .chip:hover { background: rgba(184, 69, 45, 0.1); }
+
+  .chip-pop {
+    position: absolute; top: calc(100% + 8px); left: 0;
+    width: 260px;
+    opacity: 0; transform: translateY(4px);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 100;
+  }
+  .chip-wrap:hover .chip-pop { opacity: 1; transform: none; }
+
+  .ic-mini {
+    display: block; position: relative;
+    background: #fffdf7; padding: 16px 14px 14px 24px;
+    box-shadow: 0 8px 18px rgba(42, 39, 34, 0.2), 0 2px 4px rgba(42, 39, 34, 0.1);
+    font-family: var(--font-note); color: var(--ink);
+    background-image: repeating-linear-gradient(180deg, transparent 0 22px, rgba(42, 107, 107, 0.13) 22px 23px);
+    background-position: 0 26px;
+    transform: rotate(-1.5deg);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+  .ic-mini::before {
+    content: ''; position: absolute; left: 18px; top: 0; bottom: 0;
+    width: 1px; background: rgba(184, 69, 45, 0.4);
+  }
+  .ic-mini__kicker {
+    display: block; font-family: var(--font-hand); font-size: 13px;
+    color: var(--red); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .ic-mini__title {
+    display: block; font-family: var(--font-marker); font-weight: 700;
+    font-size: 20px; line-height: 1; margin-top: 2px;
+  }
+  .ic-mini__sub {
+    display: block; font-size: 13px; color: var(--ink-dim); margin-top: 2px;
+  }
+  .ic-mini__body {
+    display: block; font-size: 14px; line-height: 1.4; margin-top: 6px;
+  }
+</style>

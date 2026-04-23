@@ -1,0 +1,223 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Highlighter from '../components/bujo/Highlighter.astro';
+import Bullet from '../components/bujo/Bullet.astro';
+import Washi from '../components/bujo/Washi.astro';
+import RulerLine from '../components/bujo/RulerLine.astro';
+import { projects } from '../data/projects';
+
+const filterTags = ['All', 'Rust', 'Next.js', 'Rails', 'Vue', 'Product', 'Testing'];
+const palette = ['var(--red)', 'var(--teal)', 'var(--navy)', 'var(--olive)'];
+const tapeColors = ['#ff9b7a', '#a0c8b4', '#9bb0d6', '#d4d28a'];
+---
+<BaseLayout title="Career — ttatsato" variant="wide" active="career" description="Project history · ~10 years of shipping software end-to-end.">
+  <section class="career">
+    <Washi top={30} left={44} w={180} rot={-3} color="#a0c8b4" pattern="dots" />
+    <div class="kicker hand">career · project cards · 10 of {projects.length}</div>
+
+    <div class="head-row">
+      <h1 class="head">
+        <Highlighter color="yellow">Work log.</Highlighter>
+      </h1>
+      <div class="est">est. 2016 →</div>
+    </div>
+
+    <p class="lede">
+      Each card is a project: who I worked with, what I built, what we shipped. Flip through them — or filter by stack.
+    </p>
+
+    <div class="filter" role="tablist" aria-label="Filter projects">
+      {filterTags.map((t) => (
+        <button type="button" class="filter__chip" data-filter={t} style={`transform:rotate(${(t.length % 3 - 1) * 0.8}deg)`} aria-pressed={t === 'All' ? 'true' : 'false'}>
+          {t}
+        </button>
+      ))}
+      <span class="filter__count hand"><span data-count>{projects.length}</span> of {projects.length}</span>
+    </div>
+
+    <RulerLine />
+
+    <div class="grid">
+      {projects.map((p, i) => {
+        const accent = palette[i % 4];
+        const tape = tapeColors[i % 4];
+        const rot = (i % 2 === 0 ? -1.2 : 1.2) + (i % 3 === 0 ? 0.4 : 0);
+        const tagSearch = [...p.stack, ...p.role].join(' | ').toLowerCase();
+        return (
+          <article class="card" data-stack={tagSearch} data-reveal data-reveal-delay={String(((i % 3) + 1))}
+            style={`--accent:${accent}; transform:rotate(${rot}deg); box-shadow:5px 5px 0 ${accent};`}>
+            <div class="card__tape"><Washi top={-12} left={20} w={80} rot={-5} color={tape} pattern="stripes" /></div>
+            <div class="card__head">
+              <span class="card__num" style={`color:${accent}`}>#{p.num}</span>
+              <span class="card__period">{p.period}</span>
+            </div>
+            <h3 class="card__title">
+              {p.link ? (
+                <a href={p.link} target="_blank" rel="noopener noreferrer">{p.title} <span class="ext">↗</span></a>
+              ) : (
+                p.title
+              )}
+            </h3>
+            <div class="card__meta">{p.contract} · team of {p.team}</div>
+            <div class="card__role">role: {p.role.join(' · ')}</div>
+            <ul class="stack">
+              {p.stack.map((s) => <li>{s}</li>)}
+            </ul>
+            {p.highlights && p.highlights.length > 0 && (
+              <ul class="hl">
+                {p.highlights.slice(0, 3).map((h) => (
+                  <li><Bullet kind="star" color={accent} />{h}</li>
+                ))}
+              </ul>
+            )}
+          </article>
+        );
+      })}
+    </div>
+
+    <div class="foot hand">
+      <span>— end of project log —</span>
+      <span>full CV: <a href="mailto:t-satoh@alby.co.jp">t-satoh@alby.co.jp</a></span>
+    </div>
+  </section>
+
+  <script is:inline>
+    (() => {
+      const chips = document.querySelectorAll('.filter__chip');
+      const cards = document.querySelectorAll('.card');
+      const count = document.querySelector('[data-count]');
+      const total = cards.length;
+      const apply = (t) => {
+        const tag = t.toLowerCase();
+        let shown = 0;
+        cards.forEach((c) => {
+          const stack = c.getAttribute('data-stack') || '';
+          const match = t === 'All' || stack.includes(tag);
+          c.style.display = match ? '' : 'none';
+          if (match) shown++;
+        });
+        if (count) count.textContent = String(shown);
+      };
+      chips.forEach((c) => {
+        c.addEventListener('click', () => {
+          chips.forEach((x) => x.setAttribute('aria-pressed', 'false'));
+          c.setAttribute('aria-pressed', 'true');
+          apply(c.getAttribute('data-filter'));
+        });
+      });
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  .career {
+    max-width: var(--maxw); margin: 0 auto;
+    padding: 44px 24px 56px;
+    position: relative;
+  }
+  .kicker {
+    font-size: 18px; color: var(--ink-dim);
+    margin-top: 14px;
+  }
+  .head-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 6px 0 4px; flex-wrap: wrap; gap: 12px;
+  }
+  .head {
+    font-family: var(--font-marker);
+    font-weight: 900;
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .est {
+    font-family: var(--font-marker);
+    font-size: 1.6rem; color: var(--red);
+    transform: rotate(-3deg);
+  }
+  .lede {
+    font-family: var(--font-note);
+    font-size: 1.15rem; line-height: 1.45;
+    max-width: 760px; margin: 8px 0 20px;
+  }
+
+  .filter {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    margin-bottom: 6px;
+  }
+  .filter__chip {
+    font-family: var(--font-hand); font-size: 1.2rem;
+    padding: 3px 14px;
+    background: var(--paper-card);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: all 0.15s ease;
+  }
+  .filter__chip:hover { background: var(--paper); }
+  .filter__chip[aria-pressed='true'] {
+    background: var(--ink); color: var(--paper);
+    box-shadow: none; transform: translate(2px, 2px) rotate(0deg) !important;
+  }
+  .filter__count { margin-left: auto; color: var(--ink-dim); font-size: 1.1rem; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 28px 22px; margin: 28px 0 0;
+  }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    position: relative;
+    background: var(--paper-card);
+    border: 2.5px solid var(--ink);
+    padding: 22px 22px 18px;
+    min-height: 300px;
+    transition: transform 0.2s ease;
+  }
+  .card:hover { transform: rotate(0deg) translateY(-3px) !important; }
+
+  .card__head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 2px;
+  }
+  .card__num {
+    font-family: var(--font-marker);
+    font-size: 2.2rem; font-weight: 700;
+  }
+  .card__period {
+    font-family: var(--font-hand); font-size: 1rem; color: var(--ink-dim);
+  }
+  .card__title {
+    font-family: var(--font-marker); font-weight: 700;
+    font-size: 1.45rem; line-height: 1.1; margin: 6px 0 10px;
+  }
+  .card__title a { color: inherit; text-decoration: none; border-bottom: 1.5px solid var(--ink); }
+  .card__title a:hover { color: var(--red); border-color: var(--red); }
+  .card__title .ext { font-size: 0.7em; color: var(--ink-dim); }
+  .card__meta { font-family: var(--font-hand); font-size: 1rem; color: var(--ink-dim); }
+  .card__role { font-family: var(--font-hand); font-size: 1rem; color: var(--teal); margin-bottom: 10px; }
+  .stack {
+    list-style: none; padding: 0; margin: 0 0 10px;
+    display: flex; flex-wrap: wrap; gap: 5px;
+  }
+  .stack li {
+    font-family: var(--font-hand); font-size: 13px;
+    border: 1.5px solid rgba(42, 39, 34, 0.4);
+    padding: 1px 8px; background: var(--paper);
+  }
+  .hl {
+    list-style: none; padding: 0; margin: 0;
+    font-family: var(--font-note); font-size: 0.98rem; line-height: 1.55;
+  }
+  .hl li { margin: 3px 0; }
+
+  .foot {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    margin-top: 40px; color: var(--ink-dim); font-size: 1.2rem;
+  }
+  .foot a { color: var(--ink); border-bottom: 1.5px dashed var(--ink); }
+  .foot a:hover { color: var(--red); border-color: var(--red); }
+</style>

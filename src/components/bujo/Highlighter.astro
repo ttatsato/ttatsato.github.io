@@ -1,0 +1,20 @@
+---
+interface Props {
+  color?: 'yellow' | 'pink' | 'green' | 'blue';
+}
+const { color = 'yellow' } = Astro.props;
+const map = {
+  yellow: 'var(--hl-yellow)',
+  pink: 'var(--hl-pink)',
+  green: 'var(--hl-green)',
+  blue: 'var(--hl-blue)',
+};
+---
+<span class="hl" style={`--hl: ${map[color]}`}><slot /></span>
+
+<style>
+  .hl {
+    background: linear-gradient(180deg, transparent 35%, var(--hl) 35%, var(--hl) 88%, transparent 88%);
+    padding: 0 4px;
+  }
+</style>

@@ -1,0 +1,42 @@
+---
+interface Props {
+  top?: string | number;
+  left?: string | number;
+  right?: string | number;
+  w?: number;
+  rot?: number;
+  color?: string;
+  pattern?: 'stripes' | 'dots' | 'solid';
+}
+const { top, left, right, w = 80, rot = -6, color = '#f4b94f', pattern = 'stripes' } = Astro.props;
+
+const bg =
+  pattern === 'stripes'
+    ? `repeating-linear-gradient(45deg, ${color} 0 6px, rgba(255,255,255,0.5) 6px 10px)`
+    : pattern === 'dots'
+    ? `radial-gradient(rgba(255,255,255,0.7) 1.5px, transparent 2px), ${color}`
+    : color;
+
+const style = [
+  top != null && `top:${typeof top === 'number' ? top + 'px' : top}`,
+  left != null && `left:${typeof left === 'number' ? left + 'px' : left}`,
+  right != null && `right:${typeof right === 'number' ? right + 'px' : right}`,
+  `width:${w}px`,
+  `transform:rotate(${rot}deg)`,
+  `background:${bg}`,
+  pattern === 'dots' && `background-size:8px 8px,100% 100%`,
+]
+  .filter(Boolean)
+  .join(';');
+---
+<div class="washi" style={style} aria-hidden="true"></div>
+
+<style>
+  .washi {
+    position: absolute;
+    height: 26px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.08);
+    border-left: 1px dashed rgba(0, 0, 0, 0.08);
+    border-right: 1px dashed rgba(0, 0, 0, 0.08);
+  }
+</style>

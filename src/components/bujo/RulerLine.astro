@@ -1,0 +1,26 @@
+---
+interface Props {
+  color?: string;
+}
+const { color = 'var(--ink)' } = Astro.props;
+const ticks = Array.from({ length: 24 });
+---
+<div class="ruler" style={`--ruler: ${color}`}>
+  <div class="ruler__line"></div>
+  <div class="ruler__ticks">
+    {ticks.map(() => <span></span>)}
+  </div>
+</div>
+
+<style>
+  .ruler { position: relative; margin: 6px 0; }
+  .ruler__line { height: 2px; background: var(--ruler); width: 100%; }
+  .ruler__ticks {
+    position: absolute; top: -4px; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+  }
+  .ruler__ticks span {
+    border-left: 1px solid var(--ruler);
+    height: 6px; width: 1px;
+  }
+</style>

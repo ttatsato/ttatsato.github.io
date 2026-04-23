@@ -1,0 +1,32 @@
+---
+interface Props {
+  label: string;
+  sub?: string;
+  rot?: number;
+  color?: string;
+}
+const { label, sub, rot = -2, color = 'var(--ink)' } = Astro.props;
+---
+<div class="stamp-row">
+  <div class="stamp" style={`--c:${color}; transform:rotate(${rot}deg);`}>
+    <span class="stamp__arrow">▶</span> {label}
+  </div>
+  {sub && <span class="stamp-sub">{sub}</span>}
+</div>
+
+<style>
+  .stamp-row { display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap; }
+  .stamp {
+    display: inline-block;
+    font-family: var(--font-marker);
+    font-weight: 800; font-size: clamp(1.4rem, 2.4vw, 2rem);
+    color: var(--c);
+    border: 3px solid var(--c);
+    padding: 6px 16px;
+    background: #fffdf7;
+    box-shadow: 3px 3px 0 var(--c);
+    letter-spacing: -0.01em;
+  }
+  .stamp__arrow { display: inline-block; margin-right: 4px; }
+  .stamp-sub { font-family: var(--font-hand); font-size: 1.2rem; color: var(--ink-dim); }
+</style>
