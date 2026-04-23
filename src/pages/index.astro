@@ -8,8 +8,8 @@ const posts = (await getCollection('posts')).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 
-const glossary = (await getCollection('glossary')).sort((a, b) =>
-  a.data.word.localeCompare(b.data.word)
+const scraps = (await getCollection('scrap')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 
 // Curated selection of work shown on the landing page.
@@ -70,14 +70,6 @@ const selectedWork = [
     tape: 'mint',
   },
 ];
-
-const groupedGlossary = glossary.reduce((acc, entry) => {
-  const initialLetter = entry.data.word.charAt(0).toUpperCase();
-  if (!acc[initialLetter]) acc[initialLetter] = [];
-  acc[initialLetter].push(entry);
-  return acc;
-}, {} as Record<string, typeof glossary>);
-const sortedLetters = Object.keys(groupedGlossary).sort();
 
 const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
 ---
@@ -204,34 +196,32 @@ const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
     </div>
   </section>
 
-  <!-- Glossary -->
-  <section id="glossary" class="section">
+  <!-- Scrap -->
+  <section id="scrap" class="section">
     <div class="section__inner">
       <header class="section__head" data-reveal>
         <span class="section__idx">§ 04</span>
-        <h2>Glossary</h2>
-        <span class="section__note hand">short notes — importable into articles</span>
+        <h2>Scrap</h2>
+        <span class="section__note hand">short notes — also importable into articles</span>
       </header>
-      <div class="glossary-wrap">
-        {sortedLetters.map((letter) => (
-          <div class="glossary-group" data-reveal>
-            <div class="glossary-group__letter">{letter}</div>
-            <ul class="glossary-group__list">
-              {groupedGlossary[letter].map((entry) => (
-                <li class="glossary-item">
-                  <a href={`${base}glossary/${entry.id}/`}>
-                    <div class="glossary-item__head">
-                      <span class="glossary-item__word">{entry.data.word}</span>
-                      {entry.data.category && <span class="glossary-item__cat mono">{entry.data.category}</span>}
-                    </div>
-                    <div class="glossary-item__def">{entry.data.definition}</div>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+      <ul class="scrap-grid">
+        {scraps.map((entry, i) => (
+          <li class="scrap-item" data-reveal data-reveal-delay={String(((i % 3) + 1))}>
+            <a href={`${base}scrap/${entry.id}/`}>
+              <div class="scrap-item__meta mono">
+                <time datetime={entry.data.date.toISOString()}>
+                  {entry.data.date.toISOString().slice(0, 10)}
+                </time>
+                {entry.data.category && <span class="scrap-item__cat">{entry.data.category}</span>}
+              </div>
+              <h3 class="scrap-item__title">{entry.data.title}</h3>
+              {entry.data.description && (
+                <p class="scrap-item__desc">{entry.data.description}</p>
+              )}
+            </a>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   </section>
 
@@ -522,55 +512,45 @@ const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
     }
   }
 
-  /* ============ Glossary ============ */
-  .glossary-wrap { display: grid; gap: 28px; }
-  .glossary-group {
-    display: grid; grid-template-columns: 72px 1fr;
-    gap: 20px; align-items: start;
-  }
-  @media (max-width: 640px) { .glossary-group { grid-template-columns: 1fr; gap: 8px; } }
-  .glossary-group__letter {
-    font-family: var(--font-serif);
-    font-size: 2.4rem; font-weight: 500; letter-spacing: -0.02em;
-    color: var(--ink-dim); line-height: 1;
-    position: sticky; top: 80px;
-    padding-top: 8px;
-    border-top: 1px solid var(--line);
-  }
-  .glossary-group__list {
+  /* ============ Scrap ============ */
+  .scrap-grid {
     list-style: none; padding: 0; margin: 0;
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(2, 1fr);
   }
-  @media (max-width: 720px) { .glossary-group__list { grid-template-columns: 1fr; } }
-  .glossary-item a {
-    display: block; padding: 16px 18px;
+  @media (max-width: 720px) { .scrap-grid { grid-template-columns: 1fr; } }
+  .scrap-item a {
+    display: block; padding: 20px 22px;
     background: var(--paper-card);
     border: 1px solid var(--line); border-radius: var(--radius-sm);
     text-decoration: none; color: inherit;
     transition: border-color 0.2s var(--ease), transform 0.2s var(--ease), background 0.2s var(--ease);
   }
-  .glossary-item a:hover {
+  .scrap-item a:hover {
     border-color: var(--line-strong);
     transform: translateY(-1px);
     background: #fff;
   }
-  .glossary-item__head {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+  .scrap-item__meta {
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--ink-faint); margin-bottom: 6px;
   }
-  .glossary-item__word {
-    font-family: var(--font-serif);
-    font-weight: 500; font-size: 1.1rem; color: var(--ink);
-    letter-spacing: -0.01em;
-  }
-  .glossary-item__cat {
-    font-size: 10px; color: var(--ink-faint);
-    letter-spacing: 0.06em; text-transform: uppercase;
+  .scrap-item__cat {
+    color: var(--ink);
     padding: 2px 6px; border: 1px solid var(--line);
-    border-radius: 3px;
+    border-radius: 3px; font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase;
   }
-  .glossary-item__def {
-    color: var(--ink-dim); font-size: 14px; line-height: 1.55;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  .scrap-item__title {
+    font-family: var(--font-serif);
+    font-weight: 500; font-size: 1.2rem; letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 6px;
+  }
+  .scrap-item__desc {
+    color: var(--ink-dim); font-size: 14px; line-height: 1.6;
+    margin: 0;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
