@@ -1,13 +1,15 @@
 ---
 import LangToggle from '../components/LangToggle.astro';
 interface Props {
-  title: string;
+  title?: string;
   description?: string;
   variant?: 'home' | 'article' | 'wide';
   active?: 'home' | 'career' | 'scrap' | 'post';
 }
 const { title, description, variant = 'article', active } = Astro.props;
 const base = import.meta.env.BASE_URL;
+const SITE_SUFFIX = 'ttatsato Portfolio';
+const fullTitle = title ? `${title} — ${SITE_SUFFIX}` : SITE_SUFFIX;
 
 const navItems = [
   { id: 'home', label: 'Home', href: base },
@@ -28,7 +30,7 @@ const navItems = [
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Gloock&family=JetBrains+Mono:wght@400;500&display=swap"
     />
-    <title>{title}</title>
+    <title>{fullTitle}</title>
   </head>
   <body data-variant={variant}>
     <div class="paper" aria-hidden="true"></div>
@@ -62,7 +64,6 @@ const navItems = [
           © {new Date().getFullYear()} ttatsato · Tokyo, JP
         </div>
         <div class="site-footer__links">
-          <a href="mailto:t-satoh@alby.co.jp">email</a>
           <a href="https://github.com/ttatsato" target="_blank" rel="noopener noreferrer">github</a>
         </div>
       </div>
