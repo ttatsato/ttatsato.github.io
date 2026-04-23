@@ -10,4 +10,14 @@ const posts = defineCollection({
   }),
 });
 
-export const collections = { posts };
+const glossary = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/glossary' }),
+  schema: z.object({
+    word: z.string(),
+    definition: z.string(),
+    category: z.string().optional(),
+    date: z.coerce.date(),
+  }),
+});
+
+export const collections = { posts, glossary };

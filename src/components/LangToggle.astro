@@ -1,5 +1,6 @@
 <div class="lang-toggle" role="group" aria-label="Language focus">
   <button type="button" data-lang-btn="en">EN</button>
+  <span class="lang-toggle__sep" aria-hidden="true">/</span>
   <button type="button" data-lang-btn="ja">JA</button>
 </div>
 
@@ -28,18 +29,33 @@
 </script>
 
 <style>
-  .lang-toggle { display: inline-flex; gap: 4px; }
+  .lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .lang-toggle__sep { color: var(--ink-faint); }
   .lang-toggle button {
     font: inherit;
-    padding: 2px 10px;
-    border: 1px solid #ccc;
-    background: #fff;
-    border-radius: 4px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 2px 2px;
+    border: none;
+    background: transparent;
+    color: var(--ink-faint);
     cursor: pointer;
+    position: relative;
+    transition: color 0.15s ease;
   }
-  .lang-toggle button[aria-pressed="true"] {
-    background: #111;
-    color: #fff;
-    border-color: #111;
+  .lang-toggle button:hover { color: var(--ink); }
+  .lang-toggle button[aria-pressed='true'] {
+    color: var(--ink);
+    background-image: linear-gradient(var(--marker), var(--marker));
+    background-repeat: no-repeat;
+    background-position: 0 75%;
+    background-size: 100% 60%;
+    padding: 2px 4px;
   }
 </style>
